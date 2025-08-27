@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "app.h"
 #include "sdcard.h"
+#include "encoder.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -111,8 +112,9 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_Delay(100);
-  SDIO_SDCard_Test();
+  //HAL_Delay(100);
+  //SDIO_SDCard_Test();
+  Encoder_Init();
   while (1)
   {
     App_Handler();
