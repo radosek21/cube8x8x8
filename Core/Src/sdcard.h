@@ -8,6 +8,12 @@
 #ifndef SRC_APP_H_
 #define SRC_APP_H_
 
+void Sdcard_Init();
+void Sdcard_Mount();
+void Sdcard_Unmount();
+void Sdcard_ScanFiles();
+char** Sdcard_GetFilesList();
+
 
 void SDIO_SDCard_Test(void);
 

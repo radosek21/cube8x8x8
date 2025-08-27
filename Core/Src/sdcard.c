@@ -8,15 +8,86 @@
 #include "fatfs.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
-//SD_HandleTypeDef hsd1;
-char TxBuffer[250];
+#define FILENEME_BUF_SIZE   32768
+#define FILENEME_BUF_CNT    2048
+
+typedef struct {
+  bool mounted;
+  FATFS FatFs;
+  char filenamesBuff[FILENEME_BUF_SIZE];
+  char *filenamesPtr[FILENEME_BUF_CNT];
+} Sdcard_t;
+
+Sdcard_t sdcard;
+
+
+
+
+void Sdcard_Init()
+{
+  memset(sdcard.filenamesBuff, 0, FILENEME_BUF_SIZE);
+  memset(sdcard.filenamesPtr, 0, FILENEME_BUF_CNT*4);
+  sdcard.mounted = false;
+}
+
+void Sdcard_Mount()
+{
+  FRESULT FR_Status;
+  FR_Status = f_mount(&sdcard.FatFs, SDPath, 1);
+  if (FR_Status == FR_OK)
+  {
+    sdcard.mounted = true;
+    Sdcard_ScanFiles();
+  } else {
+    sdcard.mounted = false;
+  }
+}
+
+void Sdcard_Unmount()
+{
+  if (sdcard.mounted) {
+    f_mount(NULL, "", 0);
+    sdcard.mounted = false;
+  }
+}
+
+void Sdcard_ScanFiles()
+{
+  FRESULT FR_Status;
+  DIR dj;         // Directory object
+  FILINFO fno;    // File information
+  uint32_t filesCnt = 0;
+  char *lastPtr;
+  sdcard.filenamesPtr[filesCnt] = sdcard.filenamesBuff;
+  if (sdcard.mounted) {
+    FR_Status = f_findfirst(&dj, &fno, "", "*"); // Start to find JPEG image files
+    while (FR_Status == FR_OK && fno.fname[0]) {     // Repeat while an item is found/
+      lastPtr = sdcard.filenamesPtr[filesCnt];
+      strcpy(lastPtr, fno.fname);
+      filesCnt++;
+      sdcard.filenamesPtr[filesCnt] = lastPtr + strlen(fno.fname) + 1;
+      FR_Status = f_findnext(&dj, &fno);           // Search for next item
+    }
+    sdcard.filenamesPtr[filesCnt] = NULL;
+  } else {
+    memset(sdcard.filenamesBuff, 0, FILENEME_BUF_SIZE);
+    memset(sdcard.filenamesPtr, 0, FILENEME_BUF_CNT*4);
+    sdcard.mounted = false;
+  }
+}
+
+char** Sdcard_GetFilesList()
+{
+  return sdcard.filenamesPtr;
+}
 
 void USB_CDC_Print(char *TxBuffer)
 {
 
 }
-
+/*
 void SDIO_SDCard_Test(void)
 {
   FATFS FatFs;
@@ -26,8 +97,8 @@ void SDIO_SDCard_Test(void)
   UINT RWC, WWC; // Read/Write Word Counter
   DWORD FreeClusters;
   uint32_t TotalSize, FreeSpace;
-  DIR dj;         /* Directory object */
-  FILINFO fno;    /* File information */
+  DIR dj;         // Directory object /
+  FILINFO fno;    // File information
   char RW_Buffer[200];
   do
   {
@@ -50,10 +121,10 @@ void SDIO_SDCard_Test(void)
     sprintf(TxBuffer, "Free SD Card Space: %lu Bytes\r\n\n", FreeSpace);
     USB_CDC_Print(TxBuffer);
 
-    FR_Status = f_findfirst(&dj, &fno, "", "*"); /* Start to find JPEG image files */
+    FR_Status = f_findfirst(&dj, &fno, "", "*"); // Start to find JPEG image files
 
-	while (FR_Status == FR_OK && fno.fname[0]) {     /* Repeat while an item is found */
-		FR_Status = f_findnext(&dj, &fno);           /* Search for next item */
+	while (FR_Status == FR_OK && fno.fname[0]) {     // Repeat while an item is found/
+		FR_Status = f_findnext(&dj, &fno);           // Search for next item
 	}
     //------------------[ Open A Text File For Write & Write Data ]--------------------
     //Open the file
@@ -116,13 +187,12 @@ void SDIO_SDCard_Test(void)
     f_close(&Fil);
     //------------------[ Delete The Text File ]--------------------
     // Delete The File
-    /*
-    FR_Status = f_unlink(MyTextFile.txt);
-    if (FR_Status != FR_OK){
-        sprintf(TxBuffer, "Error! While Deleting The (MyTextFile.txt) File.. \r\n");
-        USC_CDC_Print(TxBuffer);
-    }
-    */
+
+//    FR_Status = f_unlink(MyTextFile.txt);
+//    if (FR_Status != FR_OK){
+//        sprintf(TxBuffer, "Error! While Deleting The (MyTextFile.txt) File.. \r\n");
+//        USC_CDC_Print(TxBuffer);
+//    }
   } while(0);
   //------------------[ Test Complete! Unmount The SD Card ]--------------------
   FR_Status = f_mount(NULL, "", 0);
@@ -135,3 +205,4 @@ void SDIO_SDCard_Test(void)
       USB_CDC_Print(TxBuffer);
   }
 }
+*/

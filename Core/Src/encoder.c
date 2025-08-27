@@ -43,19 +43,18 @@ typedef struct
  */
 static encoder_Private_t enc;
 
-static TIM_HandleTypeDef htimEnc;
 
 /* Public variables --------------------------------------------------------- */
 
 /* Private function prototypes ---------------------------------------------- */
 
-static Status_t Encoder_HalInit(void);
+static Status_t Encoder_LL_Init(void);
 
 /* Functions ---------------------------------------------------------------- */
 
 void Encoder_Init(void)
 {
-  Encoder_HalInit();
+  Encoder_LL_Init();
 
   enc.going_left = 0;
   enc.going_right = 0;
@@ -93,161 +92,141 @@ int16_t Encoder_GetRelativePosition(void)
 */
 void ENCODER_IRQ_HANDLER(void)
 {
-  /* Capture compare 1 event */
-  if (__HAL_TIM_GET_FLAG(&htimEnc, TIM_FLAG_CC1) != RESET)
-  {
-    if (__HAL_TIM_GET_IT_SOURCE(&htimEnc, TIM_IT_CC1) != RESET)
+    /* Capture compare 1 event */
+    if (LL_TIM_IsActiveFlag_CC1(ENCODER_TIM_INSTANCE) && LL_TIM_IsEnabledIT_CC1(ENCODER_TIM_INSTANCE))
     {
-      {
-        __HAL_TIM_CLEAR_IT(&htimEnc, TIM_IT_CC1);
+        LL_TIM_ClearFlag_CC1(ENCODER_TIM_INSTANCE);
 
-        enc.htim_instance_CNT = (uint16_t)htimEnc.Instance->CNT;
+        enc.htim_instance_CNT = (uint16_t)LL_TIM_GetCounter(ENCODER_TIM_INSTANCE);
 
         if (enc.going_left && !enc.going_right &&
            (enc.htim_instance_CNT <= enc.htim_instance_CNT_last ||
            (enc.htim_instance_CNT_last < 4 && enc.htim_instance_CNT > UINT16_MAX - 4)))
         {
-          enc.cnt--;
-          enc.going_left = 0;
+            enc.cnt--;
+            enc.going_left = 0;
         }
         else if (enc.htim_instance_CNT >= enc.htim_instance_CNT_last ||
                 (enc.htim_instance_CNT < 4 && enc.htim_instance_CNT_last > UINT16_MAX - 4))
         {
-          enc.going_left = 0;
-          enc.going_right = 1;
+            enc.going_left = 0;
+            enc.going_right = 1;
         }
 
         enc.htim_instance_CNT_last = enc.htim_instance_CNT;
-      }
     }
-  }
 
-  /* Capture compare 2 event */
-  if (__HAL_TIM_GET_FLAG(&htimEnc, TIM_FLAG_CC2) != RESET)
-  {
-    if (__HAL_TIM_GET_IT_SOURCE(&htimEnc, TIM_IT_CC2) != RESET)
+    /* Capture compare 2 event */
+    if (LL_TIM_IsActiveFlag_CC2(ENCODER_TIM_INSTANCE) && LL_TIM_IsEnabledIT_CC2(ENCODER_TIM_INSTANCE))
     {
-      {
-        __HAL_TIM_CLEAR_IT(&htimEnc, TIM_IT_CC2);
+        LL_TIM_ClearFlag_CC2(ENCODER_TIM_INSTANCE);
 
-        enc.htim_instance_CNT = (uint16_t)htimEnc.Instance->CNT;
-
+        enc.htim_instance_CNT = (uint16_t)LL_TIM_GetCounter(ENCODER_TIM_INSTANCE);
 
         if (!enc.going_left && enc.going_right &&
            (enc.htim_instance_CNT >= enc.htim_instance_CNT_last ||
            (enc.htim_instance_CNT < 4 && enc.htim_instance_CNT_last > UINT16_MAX - 4)))
         {
-          enc.cnt++;
-          enc.going_right = 0;
+            enc.cnt++;
+            enc.going_right = 0;
         }
-
         else if (enc.htim_instance_CNT <= enc.htim_instance_CNT_last ||
                 (enc.htim_instance_CNT_last < 4 && enc.htim_instance_CNT > UINT16_MAX - 4))
         {
-          enc.going_left = 1;
-          enc.going_right = 0;
+            enc.going_left = 1;
+            enc.going_right = 0;
         }
+
         enc.htim_instance_CNT_last = enc.htim_instance_CNT;
-      }
     }
-  }
 
-  /* Capture compare 3 event */
-  if (__HAL_TIM_GET_FLAG(&htimEnc, TIM_FLAG_CC3) != RESET)
-  {
-    if (__HAL_TIM_GET_IT_SOURCE(&htimEnc, TIM_IT_CC3) != RESET)
+    /* Capture compare 3 event */
+    if (LL_TIM_IsActiveFlag_CC3(ENCODER_TIM_INSTANCE) && LL_TIM_IsEnabledIT_CC3(ENCODER_TIM_INSTANCE))
     {
-      {
-        __HAL_TIM_CLEAR_IT(&htimEnc, TIM_IT_CC3);
+        LL_TIM_ClearFlag_CC3(ENCODER_TIM_INSTANCE);
 
         // Do nothing
-      }
     }
-  }
 
-  /* Capture compare 4 event */
-  if (__HAL_TIM_GET_FLAG(&htimEnc, TIM_FLAG_CC4) != RESET)
-  {
-    if (__HAL_TIM_GET_IT_SOURCE(&htimEnc, TIM_IT_CC4) != RESET)
+    /* Capture compare 4 event */
+    if (LL_TIM_IsActiveFlag_CC4(ENCODER_TIM_INSTANCE) && LL_TIM_IsEnabledIT_CC4(ENCODER_TIM_INSTANCE))
     {
-      {
-        __HAL_TIM_CLEAR_IT(&htimEnc, TIM_IT_CC4);
+        LL_TIM_ClearFlag_CC4(ENCODER_TIM_INSTANCE);
 
         // Do nothing
-      }
     }
-  }
+    if (LL_TIM_IsActiveFlag_UPDATE(ENCODER_TIM_INSTANCE)) {
+      LL_TIM_ClearFlag_UPDATE(ENCODER_TIM_INSTANCE);
+            // Do nothing
+    }
 }
 
 /**
 * This function initializes HAL for encoder
 */
-static Status_t Encoder_HalInit(void)
+static Status_t Encoder_LL_Init(void)
 {
-  Status_t status = STATUS_OK;
+    Status_t status = STATUS_OK;
 
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  TIM_Encoder_InitTypeDef sConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
+    // Peripheral clock enable
+    ENCODER_CLK_ENABLE();
 
-  /* Peripheral clock enable */
-  ENCODER_CLK_ENABLE();
+    // Reset and configure the TIM instance
+    LL_TIM_InitTypeDef TIM_InitStruct = {0};
+    LL_TIM_ENCODER_InitTypeDef encoderInitStruct = {0};
 
-  htimEnc.Instance = ENCODER_TIM_INSTANCE;
-  htimEnc.Init.Prescaler = 1;
-  htimEnc.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htimEnc.Init.Period = UINT16_MAX;
-  htimEnc.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htimEnc.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    // GPIO Configuration
+    LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
-  sConfig.IC1Polarity = ENCODER_POLARITY;
-  sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC1Filter = 15;
-  sConfig.IC2Polarity = ENCODER_POLARITY;
-  sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC2Filter = 15;
-  if (HAL_TIM_Encoder_Init(&htimEnc, &sConfig) != HAL_OK)
-  {
-    status |= (STATUS_ERROR | STATUS_FAIL);
-  }
+    GPIO_InitStruct.Pin = ENCODER_LEFT_PIN;
+    GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+    GPIO_InitStruct.Pull = ENCODER_PULL;
+    GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = ENCODER_TIM_ALTERNATE;
+    LL_GPIO_Init(ENCODER_LEFT_PORT, &GPIO_InitStruct);
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htimEnc, &sMasterConfig) != HAL_OK)
-  {
-    status |= (STATUS_ERROR | STATUS_FAIL);
-  }
+    GPIO_InitStruct.Pin = ENCODER_RIGHT_PIN;
+    LL_GPIO_Init(ENCODER_RIGHT_PORT, &GPIO_InitStruct);
 
-  /* GPIO Configuration */
-  GPIO_InitStruct.Pin = ENCODER_LEFT_PIN;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = ENCODER_PULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = ENCODER_TIM_ALTERNATE;
-  HAL_GPIO_Init(ENCODER_LEFT_PORT, &GPIO_InitStruct);
+    // Configure TIM encoder interface
+    TIM_InitStruct.Prescaler = 1;
+    TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+    TIM_InitStruct.Autoreload = UINT16_MAX;
+    TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+    TIM_InitStruct.RepetitionCounter = 0;
+    LL_TIM_Init(ENCODER_TIM_INSTANCE, &TIM_InitStruct);
 
-  GPIO_InitStruct.Pin = ENCODER_RIGHT_PIN;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = ENCODER_PULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = ENCODER_TIM_ALTERNATE;
-  HAL_GPIO_Init(ENCODER_RIGHT_PORT, &GPIO_InitStruct);
+    encoderInitStruct.EncoderMode = LL_TIM_ENCODERMODE_X4_TI12;
+    encoderInitStruct.IC1Polarity = ENCODER_POLARITY;
+    encoderInitStruct.IC1ActiveInput = LL_TIM_ACTIVEINPUT_DIRECTTI;
+    encoderInitStruct.IC1Prescaler = LL_TIM_ICPSC_DIV1;
+    encoderInitStruct.IC1Filter = LL_TIM_IC_FILTER_FDIV16_N5;
+    encoderInitStruct.IC2Polarity = ENCODER_POLARITY;
+    encoderInitStruct.IC2ActiveInput = LL_TIM_ACTIVEINPUT_DIRECTTI;
+    encoderInitStruct.IC2Prescaler = LL_TIM_ICPSC_DIV1;
+    encoderInitStruct.IC2Filter = LL_TIM_IC_FILTER_FDIV16_N5;
+    if (LL_TIM_ENCODER_Init(ENCODER_TIM_INSTANCE, &encoderInitStruct) != SUCCESS)
+    {
+        status |= (STATUS_ERROR | STATUS_FAIL);
+    }
 
-  /* Enable and set encoder interrupt to its priority */
-  HAL_NVIC_SetPriority(ENCODER_IRQ_NUMBER, PRIO_IRQ_ENCODER, 0x00);
-  HAL_NVIC_ClearPendingIRQ(ENCODER_IRQ_NUMBER);
-  HAL_NVIC_EnableIRQ(ENCODER_IRQ_NUMBER);
+    // Master configuration
+    LL_TIM_DisableMasterSlaveMode(ENCODER_TIM_INSTANCE);
+    LL_TIM_SetTriggerOutput(ENCODER_TIM_INSTANCE, LL_TIM_TRGO_RESET);
 
-  /* Start timer */
-  if (HAL_TIM_Encoder_Start_IT(&htimEnc, TIM_CHANNEL_ALL) != HAL_OK)
-  {
-    status |= (STATUS_ERROR | STATUS_FAIL);
-  }
+    // Enable TIM counter
+    LL_TIM_EnableCounter(ENCODER_TIM_INSTANCE);
 
-  return status;
+    // NVIC configuration for TIM interrupt
+    NVIC_SetPriority(ENCODER_IRQ_NUMBER, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIO_IRQ_ENCODER, 0x00));
+    NVIC_ClearPendingIRQ(ENCODER_IRQ_NUMBER);
+    NVIC_EnableIRQ(ENCODER_IRQ_NUMBER);
+
+    // Enable update interrupt
+    LL_TIM_EnableIT_CC1(ENCODER_TIM_INSTANCE);
+    LL_TIM_EnableIT_CC2(ENCODER_TIM_INSTANCE);
+
+    return status;
 }
 
 /** @} */

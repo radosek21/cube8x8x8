@@ -41,7 +41,7 @@
 #define ENCODER_TIM_INSTANCE            TIM4                      ///< Encoder TIM instance
 #define ENCODER_TIM_ALTERNATE           GPIO_AF2_TIM4             ///< Encoder TIM alternate
 
-#define ENCODER_POLARITY                TIM_ICPOLARITY_RISING     ///< Encoder polarity - rising edge
+#define ENCODER_POLARITY                LL_TIM_IC_POLARITY_RISING     ///< Encoder polarity - rising edge
 #define ENCODER_PULL                    GPIO_NOPULL               ///< Encoder pull resistor - no pull
 #define ENCODER_LEFT_PORT               GPIOB                     ///< Encoder left GPIO PORT
 #define ENCODER_LEFT_PIN                GPIO_PIN_6                ///< Encoder left GPIO PIN

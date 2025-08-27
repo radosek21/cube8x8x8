@@ -39,6 +39,11 @@ extern "C"
 **************    Public Definitions
 ************************************************************************************************************/
 
+#define WS28XX_PIXEL_MAX  128
+#define WS28XX_PULSE_0    28
+#define WS28XX_PULSE_1    48
+
+
 #define COLOR_RGB565_BLACK         0x0000      /*   0,   0,   0 */
 #define COLOR_RGB565_WHITE         0xFFFF      /* 255, 255, 255 */
 #define COLOR_RGB565_RED           0xF800      /* 255,   0,   0 */
@@ -115,19 +120,16 @@ extern "C"
 #define COLOR_RGB888_DARKSLATEGRAY 0x2F4F4F    /* 47, 79, 79 */
 #define COLOR_RGB888_DIMGRAY       0x696969    /* 105, 105, 105 */
 
+#define SW28xx_DMA_DUMMY_BYTES    48
 /************************************************************************************************************
 **************    Public struct/enum
 ************************************************************************************************************/
 
 typedef struct
 {
-  uint8_t                Buffer[(WS28XX_PIXEL_MAX * 24) + 12];
-  TIM_HandleTypeDef      *hTim;
+  uint8_t                Buffer[(WS28XX_PIXEL_MAX * 24) + SW28xx_DMA_DUMMY_BYTES];
   uint8_t                Channel;
   uint8_t                Lock;
-  uint16_t               Pulse0;
-  uint16_t               Pulse1;
-  uint16_t               MaxPixel;
   uint8_t                Pixel[WS28XX_PIXEL_MAX][3];
 } WS28XX_HandleTypeDef;
 
@@ -135,7 +137,7 @@ typedef struct
 **************    Public Functions
 ************************************************************************************************************/
 
-bool  WS28XX_Init(WS28XX_HandleTypeDef *hLed, TIM_HandleTypeDef *hTim,uint8_t Channel, uint16_t Pixel);
+bool  WS28XX_Init(WS28XX_HandleTypeDef *hLed,uint8_t Channel, uint16_t Pixel);
 bool  WS28XX_SetPixel_RGB(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint8_t Red, uint8_t Green, uint8_t Blue);
 bool  WS28XX_SetPixel_RGB_565(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint16_t Color);
 bool  WS28XX_SetPixel_RGB_888(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint32_t Color);

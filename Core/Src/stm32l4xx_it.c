@@ -56,10 +56,6 @@
 
 /* External variables --------------------------------------------------------*/
 extern SPI_HandleTypeDef hspi1;
-extern DMA_HandleTypeDef hdma_tim1_ch2;
-extern DMA_HandleTypeDef hdma_tim1_ch3;
-extern DMA_HandleTypeDef hdma_tim1_ch1;
-extern DMA_HandleTypeDef hdma_tim1_ch4_trig_com;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -208,9 +204,12 @@ void SysTick_Handler(void)
 void DMA1_Channel2_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel2_IRQn 0 */
-
+  if (0 != LL_DMA_IsActiveFlag_TC2(DMA1)) {
+    LL_DMA_ClearFlag_TC2(DMA1);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+    TIM_PWM_PulseFinished_Callback(1);
+  }
   /* USER CODE END DMA1_Channel2_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_tim1_ch1);
   /* USER CODE BEGIN DMA1_Channel2_IRQn 1 */
 
   /* USER CODE END DMA1_Channel2_IRQn 1 */
@@ -222,9 +221,12 @@ void DMA1_Channel2_IRQHandler(void)
 void DMA1_Channel3_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel3_IRQn 0 */
-
+  if (0 != LL_DMA_IsActiveFlag_TC3(DMA1)) {
+    LL_DMA_ClearFlag_TC3(DMA1);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
+    TIM_PWM_PulseFinished_Callback(2);
+  }
   /* USER CODE END DMA1_Channel3_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_tim1_ch2);
   /* USER CODE BEGIN DMA1_Channel3_IRQn 1 */
 
   /* USER CODE END DMA1_Channel3_IRQn 1 */
@@ -236,9 +238,12 @@ void DMA1_Channel3_IRQHandler(void)
 void DMA1_Channel4_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel4_IRQn 0 */
-
+  if (0 != LL_DMA_IsActiveFlag_TC4(DMA1)) {
+    LL_DMA_ClearFlag_TC4(DMA1);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+    TIM_PWM_PulseFinished_Callback(8);
+  }
   /* USER CODE END DMA1_Channel4_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_tim1_ch4_trig_com);
   /* USER CODE BEGIN DMA1_Channel4_IRQn 1 */
 
   /* USER CODE END DMA1_Channel4_IRQn 1 */
@@ -250,9 +255,12 @@ void DMA1_Channel4_IRQHandler(void)
 void DMA1_Channel7_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel7_IRQn 0 */
-
+  if (0 != LL_DMA_IsActiveFlag_TC7(DMA1)) {
+    LL_DMA_ClearFlag_TC7(DMA1);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_7);
+    TIM_PWM_PulseFinished_Callback(4);
+  }
   /* USER CODE END DMA1_Channel7_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_tim1_ch3);
   /* USER CODE BEGIN DMA1_Channel7_IRQn 1 */
 
   /* USER CODE END DMA1_Channel7_IRQn 1 */

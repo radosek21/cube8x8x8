@@ -114,25 +114,16 @@ void WS28XX_UnLock(WS28XX_HandleTypeDef *hLed)
   *
   * @retval bool: true or false
   */
-bool WS28XX_Init(WS28XX_HandleTypeDef *hLed, TIM_HandleTypeDef *hTim,
-      uint8_t Channel, uint16_t Pixel)
+bool WS28XX_Init(WS28XX_HandleTypeDef *hLed, uint8_t Channel, uint16_t Pixel)
 {
   bool answer = false;
   do
   {
-    if (hLed == NULL || hTim == NULL)
-    {
-      break;
-    }
     if (Pixel > WS28XX_PIXEL_MAX)
     {
       break;
     }
     hLed->Channel = Channel;
-    hLed->MaxPixel = Pixel;
-    hLed->hTim = hTim;
-    hLed->Pulse0 = 7;
-    hLed->Pulse1 = 12;
     memset(hLed->Pixel, 0, sizeof(hLed->Pixel));
     memset(hLed->Buffer, 0, sizeof(hLed->Buffer));
     //HAL_TIM_PWM_Start_DMA(hLed->hTim, hLed->Channel, (const uint32_t*)hLed->Buffer, Pixel);
@@ -162,7 +153,7 @@ bool WS28XX_SetPixel_RGB(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint8_t Red
   bool answer = true;
   do
   {
-    if (Pixel >= hLed->MaxPixel)
+    if (Pixel >= WS28XX_PIXEL_MAX)
     {
       answer = false;
       break;
@@ -221,7 +212,7 @@ bool WS28XX_SetPixel_RGB_565(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint16_
   uint8_t Red, Green, Blue;
   do
   {
-    if (Pixel >= hLed->MaxPixel)
+    if (Pixel >= WS28XX_PIXEL_MAX)
     {
       answer = false;
       break;
@@ -283,7 +274,7 @@ bool WS28XX_SetPixel_RGB_888(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint32_
   uint8_t Red, Green, Blue;
   do
   {
-    if (Pixel >= hLed->MaxPixel)
+    if (Pixel >= WS28XX_PIXEL_MAX)
     {
       answer = false;
       break;
@@ -346,7 +337,7 @@ bool WS28XX_SetPixel_RGBW_565(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint16
   uint8_t Red, Green, Blue;
   do
   {
-    if (Pixel >= hLed->MaxPixel)
+    if (Pixel >= WS28XX_PIXEL_MAX)
     {
       answer = false;
       break;
@@ -409,7 +400,7 @@ bool WS28XX_SetPixel_RGBW_888(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint32
   uint8_t Red, Green, Blue;
   do
   {
-    if (Pixel >= hLed->MaxPixel)
+    if (Pixel >= WS28XX_PIXEL_MAX)
     {
       answer = false;
       break;
@@ -466,37 +457,28 @@ bool WS28XX_SetPixel_RGBW_888(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint32
 bool WS28XX_Update(WS28XX_HandleTypeDef *hLed)
 {
   bool answer = true;
-  uint32_t i = 8;
+  uint32_t i = 0;
   WS28XX_Lock(hLed);
-  for (uint16_t pixel = 0; pixel < hLed->MaxPixel; pixel++)
-  {
-    for (int rgb = 0; rgb < 3; rgb ++)
-    {
-      for (int b = 7; b >= 0 ; b--)
-      {
-        if ((hLed->Pixel[pixel][rgb] & (1 << b)) == 0)
-        {
-          hLed->Buffer[i] = hLed->Pulse0;
-        }
-        else
-        {
-          hLed->Buffer[i] = hLed->Pulse1;
+  for (uint16_t pixel = 0; pixel < WS28XX_PIXEL_MAX; pixel++) {
+    for (int rgb = 0; rgb < 3; rgb ++) {
+      for (int b = 7; b >= 0 ; b--) {
+        if ((hLed->Pixel[pixel][rgb] & (1 << b)) == 0) {
+          hLed->Buffer[i] = WS28XX_PULSE_0;
+        } else {
+          hLed->Buffer[i] = WS28XX_PULSE_1;
         }
         i++;
       }
     }
   }
-  if (HAL_TIM_PWM_Start_DMA(hLed->hTim, hLed->Channel, (const uint32_t*)hLed->Buffer, (hLed->MaxPixel * 24) + 12) != HAL_OK)
-  {
-    answer = false;
-  }
+  //if (HAL_TIM_PWM_Start_DMA(hLed->hTim, hLed->Channel, (const uint32_t*)hLed->Buffer, (hLed->MaxPixel * 24) + 12) != HAL_OK)
+ // {
+  //  answer = false;
+  //}
   WS28XX_UnLock(hLed);
   return answer;
 }
 
-void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *htim)
-{
-	//HAL_TIM_PWM_Stop_DMA(htim, htim->Channel);
-}
+
 
 /***********************************************************************************************************/
