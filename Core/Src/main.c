@@ -115,12 +115,14 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   App_Init();
+  Sdcard_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   //HAL_Delay(100);
   //SDIO_SDCard_Test();
+  Sdcard_Mount();
   Encoder_Init();
   ssd1306_TestAll();
   while (1)

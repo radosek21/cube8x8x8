@@ -42,6 +42,14 @@ typedef enum {
 	STATUS_ERROR
 } Status_t;
 
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
