@@ -21,15 +21,13 @@ void App_Init()
 {
   CubeMux_Init();
   Sdcard_Init();
-
-
   Sdcard_Mount();
   Encoder_Init();
-//  ssd1306_Init();
-//  ssd1306_Fill(Black);
-//  ssd1306_SetCursor(4, 6);
-//  ssd1306_WriteString("Nazdarek", Font_11x18, White);
-//  ssd1306_UpdateScreen();
+  ssd1306_Init();
+  ssd1306_Fill(Black);
+  ssd1306_SetCursor(4, 6);
+  ssd1306_WriteString("Nazdarek", Font_11x18, White);
+  ssd1306_UpdateScreen();
   filelist= Sdcard_GetFilesList();
   uint32_t pos = 0;
 //  ptr = filelist[pos];
