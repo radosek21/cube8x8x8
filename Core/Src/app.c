@@ -36,16 +36,16 @@ void App_Init()
 
 void App_Handler()
 {
-//  if(Encoder_GetRelativePosition()!=0) {
-//    ptr = filelist[++pos];
-//    if (ptr == NULL) {
-//      pos = 0;
-//      ptr = filelist[pos];
-//    }
-//    ssd1306_Fill(Black);
-//    ssd1306_SetCursor(1, 10);
-//    ssd1306_WriteString(ptr, Font_7x10, White);
-//    ssd1306_UpdateScreen();
-//  }
+  if(Encoder_GetRelativePosition()!=0) {
+    ptr = filelist[++pos];
+    if (ptr == NULL) {
+      pos = 0;
+      ptr = filelist[pos];
+    }
+    ssd1306_Fill(Black);
+    ssd1306_SetCursor(1, 10);
+    ssd1306_WriteString(ptr, Font_7x10, White);
+    ssd1306_UpdateScreen();
+  }
 	HAL_Delay(1);
 }
