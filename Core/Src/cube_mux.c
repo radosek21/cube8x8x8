@@ -19,6 +19,7 @@ typedef struct {
   uint8_t blackScreenBuffer[(WS28XX_PIXEL_MAX * 24) + SW28xx_DMA_DUMMY_BYTES];
   uint16_t currMuxId;
   uint32_t muxPendingMask;
+  uint32_t muxUpdateMask;
 } CubeMux_t;
 
 typedef struct {
@@ -38,8 +39,6 @@ static const MuxDmaConf_t muxDmaConf[LEDS_PAGES_CNT] = {
 
 
 static void CubeMux_NextMux();
-void CubeMux_ScreenToPixels(WS28XX_HandleTypeDef *hLed, uint16_t scr[8][8]);
-uint16_t col[4] = {COLOR_RGB565_GREEN, COLOR_RGB565_BLUE, COLOR_RGB565_RED, COLOR_RGB565_PURPLE};
 
 void CubeMux_Init()
 {
@@ -48,7 +47,7 @@ void CubeMux_Init()
     hLed = &cubeMux.hLeds[i];
     WS28XX_Init(hLed, 1, WS28XX_PIXEL_MAX);
     for(int p = 0; p < WS28XX_PIXEL_MAX; p++) {
-      WS28XX_SetPixel_RGB_565(hLed, p, col[i]);
+      WS28XX_SetPixel_RGB_565(hLed, p, COLOR_RGB565_BLACK);
     }
     WS28XX_Update(hLed);
     LL_TIM_CC_EnableChannel(TIM1, muxDmaConf[i].timChannel);
@@ -64,20 +63,13 @@ void CubeMux_Init()
 
   cubeMux.currMuxId = 0;
   cubeMux.muxPendingMask = 0;
-}
-
-void CubeMux_ScreenToPixels(WS28XX_HandleTypeDef *hLed, uint16_t scr[8][8])
-{
-  for(int y=0; y<8; y++) {
-    for(int x=0; x<8; x++) {
-      WS28XX_SetPixel_RGB_565(hLed, y*8+x, scr[(y&1) ? x : 7-x][y]);
-    }
-  }
+  cubeMux.muxUpdateMask = 0;
 }
 
 void CubeMux_StartMux()
 {
   cubeMux.currMuxId = 0;
+  cubeMux.muxUpdateMask = 0;
   CubeMux_NextMux();
 }
 
@@ -87,6 +79,12 @@ static void CubeMux_NextMux()
   cubeMux.muxPendingMask = 0xF;
 
   LL_TIM_DisableCounter(TIM1);
+  if (cubeMux.muxUpdateMask == 0xF) {
+    cubeMux.muxUpdateMask = 0;
+    for(int i=0; i<LEDS_PAGES_CNT; i++) {
+      WS28XX_Update(&cubeMux.hLeds[i]);
+    }
+  }
 
   for(int i=0; i<LEDS_PAGES_CNT; i++) {
     LL_DMA_ConfigAddresses(DMA1, muxDmaConf[i].dmaChannel, (i == cubeMux.currMuxId) ? (uint32_t)cubeMux.hLeds[i].Buffer : (uint32_t)cubeMux.blackScreenBuffer, muxDmaConf[i].ccr, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
@@ -98,6 +96,12 @@ static void CubeMux_NextMux()
 
   cubeMux.currMuxId++;
   cubeMux.currMuxId %= LEDS_PAGES_CNT;
+}
+
+void CubeMux_SetPixel_Voxel(int hLedId, uint16_t Pixel, Voxel_t vox)
+{
+  cubeMux.muxUpdateMask |= (1 << hLedId);
+  WS28XX_SetPixel_Voxel(&cubeMux.hLeds[hLedId], Pixel, vox);
 }
 
 void TIM_PWM_PulseFinished_Callback(uint32_t channel)

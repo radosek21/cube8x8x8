@@ -318,6 +318,26 @@ bool WS28XX_SetPixel_RGB_888(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint32_
   return answer;
 }
 
+bool WS28XX_SetPixel_Voxel(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, Voxel_t vox)
+{
+  bool answer = true;
+  do
+  {
+    if (Pixel >= WS28XX_PIXEL_MAX)
+    {
+      answer = false;
+      break;
+    }
+    hLed->Pixel[Pixel][0] = vox.r;
+    hLed->Pixel[Pixel][1] = vox.g;
+    hLed->Pixel[Pixel][2] = vox.b;
+  }
+
+  while (0);
+
+  return answer;
+}
+
 /***********************************************************************************************************/
 
 /**

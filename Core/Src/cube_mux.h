@@ -13,6 +13,8 @@ extern "C"
 #include "ws28xx.h"
 
 
+
+
 /************************************************************************************************************
 **************    Public Functions
 ************************************************************************************************************/
@@ -20,6 +22,7 @@ extern "C"
 void CubeMux_Init();
 void CubeMux_StartMux();
 void TIM_PWM_PulseFinished_Callback(uint32_t channel);
+void CubeMux_SetPixel_Voxel(int hLedId, uint16_t Pixel, Voxel_t vox);
 
 
 #ifdef __cplusplus

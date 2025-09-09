@@ -62,7 +62,7 @@ void Sdcard_ScanFiles()
   char *lastPtr;
   sdcard.filenamesPtr[filesCnt] = sdcard.filenamesBuff;
   if (sdcard.mounted) {
-    FR_Status = f_findfirst(&dj, &fno, "", "*"); // Start to find JPEG image files
+    FR_Status = f_findfirst(&dj, &fno, "", "*.vox"); // Start to find VOX files
     while (FR_Status == FR_OK && fno.fname[0]) {     // Repeat while an item is found/
       lastPtr = sdcard.filenamesPtr[filesCnt];
       strcpy(lastPtr, fno.fname);

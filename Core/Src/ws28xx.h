@@ -125,6 +125,12 @@ extern "C"
 **************    Public struct/enum
 ************************************************************************************************************/
 
+typedef struct {
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+} Voxel_t;
+
 typedef struct
 {
   uint8_t                Buffer[(WS28XX_PIXEL_MAX * 24) + SW28xx_DMA_DUMMY_BYTES];
@@ -141,6 +147,7 @@ bool  WS28XX_Init(WS28XX_HandleTypeDef *hLed,uint8_t Channel, uint16_t Pixel);
 bool  WS28XX_SetPixel_RGB(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint8_t Red, uint8_t Green, uint8_t Blue);
 bool  WS28XX_SetPixel_RGB_565(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint16_t Color);
 bool  WS28XX_SetPixel_RGB_888(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint32_t Color);
+bool  WS28XX_SetPixel_Voxel(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, Voxel_t vox);
 bool  WS28XX_SetPixel_RGBW_565(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint16_t Color, uint8_t Brightness);
 bool  WS28XX_SetPixel_RGBW_888(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint32_t Color, uint8_t Brightness);
 bool  WS28XX_Update(WS28XX_HandleTypeDef *hLed);
