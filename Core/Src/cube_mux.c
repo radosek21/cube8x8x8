@@ -31,10 +31,10 @@ typedef struct {
 
 static CubeMux_t cubeMux;
 static const MuxDmaConf_t muxDmaConf[LEDS_PAGES_CNT] = {
-    {LL_TIM_CHANNEL_CH1, LL_DMA_CHANNEL_2, (uint32_t)&(TIM1->CCR1)},
-    {LL_TIM_CHANNEL_CH2, LL_DMA_CHANNEL_3, (uint32_t)&(TIM1->CCR2)},
-    {LL_TIM_CHANNEL_CH3, LL_DMA_CHANNEL_7, (uint32_t)&(TIM1->CCR3)},
     {LL_TIM_CHANNEL_CH4, LL_DMA_CHANNEL_4, (uint32_t)&(TIM1->CCR4)},
+    {LL_TIM_CHANNEL_CH1, LL_DMA_CHANNEL_2, (uint32_t)&(TIM1->CCR1)},
+    {LL_TIM_CHANNEL_CH3, LL_DMA_CHANNEL_7, (uint32_t)&(TIM1->CCR3)},
+    {LL_TIM_CHANNEL_CH2, LL_DMA_CHANNEL_3, (uint32_t)&(TIM1->CCR2)},
 };
 
 

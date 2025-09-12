@@ -57,6 +57,8 @@ void App_Init()
 void App_Handler()
 {
   if(Encoder_GetRelativePosition()!=0) {
+  pos++;
+
     filename = filelist[++pos];
     if (filename == NULL) {
       pos = 0;
@@ -69,8 +71,27 @@ void App_Handler()
 
     App_LoadVoxToScreen(filename);
     App_ScreenToPixels();
+  /*if(pos>=8) {
+	  pos = 0;
   }
-	HAL_Delay(1);
+  ssd1306_Fill(Black);
+  ssd1306_SetCursor(1, 10);
+  char s[32];
+  sprintf(s, "Z = %d", pos);
+  ssd1306_WriteString(s, Font_7x10, White);
+  ssd1306_UpdateScreen();
+  for(int z=0; z<8; z++) {
+	for(int y=0; y<8; y++) {
+	  for(int x=0; x<8; x++) {
+		scrBuf[x][y][z].r = (z==pos) ? 255 : 0;
+		scrBuf[x][y][z].g = (z==pos) ? 255 : 0;
+		scrBuf[x][y][z].b = (z==pos) ? 255 : 0;
+	  }
+	}
+  }
+  App_ScreenToPixels();*/
+  }
+  HAL_Delay(1);
 }
 
 void App_LoadVoxToScreen(char *filename)
@@ -144,7 +165,7 @@ void App_LoadVoxToScreen(char *filename)
 //    printf("voxel count %ld\n", voxelCount);
     for(int i = 0; i < voxelCount; i++) {
       if (f_read(&Fil, &coord, 4, &bytes_read) == FR_OK) {
-        memcpy(&scrBuf[coord.x][coord.z][coord.y], palette + coord.i * 4, sizeof(Voxel_t));
+        memcpy(&scrBuf[coord.x][coord.y][coord.z], palette + coord.i * 4, sizeof(Voxel_t));
       }
     }
   }
@@ -152,12 +173,17 @@ void App_LoadVoxToScreen(char *filename)
   f_close(&Fil);
 }
 
+
+int logical_xor(int a, int b) {
+  return (a || b) && !(a && b);
+}
+
 void App_ScreenToPixels()
 {
   for(int z=0; z<8; z++) {
     for(int y=0; y<8; y++) {
       for(int x=0; x<8; x++) {
-        Voxel_t vox = scrBuf[(y&1) ? x : 7-x][y][z];
+        Voxel_t vox = scrBuf[(logical_xor(y&1, !(z&2))) ? 7-x : x][(z&2) ? y : 7-y][z];
         CubeMux_SetPixel_Voxel(z/2, (z&1)*64 + y*8 + x, vox);
       }
     }
