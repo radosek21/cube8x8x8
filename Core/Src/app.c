@@ -16,7 +16,7 @@
 
 
 
-#define BUFFER_SIZE 16
+#define BUFFER_SIZE 4096
 #define SEARCH_STR1 "SIZE"
 #define SEARCH_STR2 "XYZI"
 #define SEARCH_STR3 "RGBA"
@@ -57,7 +57,6 @@ void App_Init()
 void App_Handler()
 {
   if(Encoder_GetRelativePosition()!=0) {
-  pos++;
 
     filename = filelist[++pos];
     if (filename == NULL) {
@@ -71,106 +70,69 @@ void App_Handler()
 
     App_LoadVoxToScreen(filename);
     App_ScreenToPixels();
-  /*if(pos>=8) {
-	  pos = 0;
-  }
-  ssd1306_Fill(Black);
-  ssd1306_SetCursor(1, 10);
-  char s[32];
-  sprintf(s, "Z = %d", pos);
-  ssd1306_WriteString(s, Font_7x10, White);
-  ssd1306_UpdateScreen();
-  for(int z=0; z<8; z++) {
-	for(int y=0; y<8; y++) {
-	  for(int x=0; x<8; x++) {
-		scrBuf[x][y][z].r = (z==pos) ? 255 : 0;
-		scrBuf[x][y][z].g = (z==pos) ? 255 : 0;
-		scrBuf[x][y][z].b = (z==pos) ? 255 : 0;
-	  }
-	}
-  }
-  App_ScreenToPixels();*/
   }
   HAL_Delay(1);
 }
 
 void App_LoadVoxToScreen(char *filename)
 {
-  unsigned long buf[4];
   unsigned long voxelCount;
-  unsigned long paletteSize;
-  uint8_t palette[1024];
-  Coord_t coord;
+  Coord_t *coord;
   FIL Fil;
   FRESULT FR_Status;
+  char buffer[BUFFER_SIZE];
+  size_t bytes_read;
+
+  int sizePos = 0, xyziPos = 0, rgbaPos = 0;
 
   memset(scrBuf, 0, sizeof(Voxel_t)*8*8*8);
 
   FR_Status = f_open(&Fil, filename, FA_READ);
-  if(FR_Status != FR_OK)
-  {
+  if(FR_Status != FR_OK) {
+    return;
+  }
+  if(f_read(&Fil, buffer, BUFFER_SIZE, &bytes_read) != FR_OK) {
     return;
   }
 
-  char buffer[BUFFER_SIZE];
-  size_t bytes_read;
-  int sizePos = 0, xyziPos = 0, rgbaPos = 0;
+  f_close(&Fil);
 
-  // Čti soubor po částech
-  ;
-  while ((f_read(&Fil, buffer, BUFFER_SIZE, &bytes_read) == FR_OK) && (bytes_read == BUFFER_SIZE)) {
-    // Hledej "SIZE" v bufferu
-    for (size_t i = 0; i <= bytes_read - strlen(SEARCH_STR1); i++) {
-      if (memcmp(buffer + i, SEARCH_STR1, strlen(SEARCH_STR1)) == 0) {
-        sizePos = f_tell(&Fil) - bytes_read + i;
-        break;  // Pokud chcete pokračovat ve vyhledávání dalších výskytů, odstraňte tento 'break'.
-      }
-    }
 
-    // Hledej "XYZI" v bufferu
-    for (size_t i = 0; i <= bytes_read - strlen(SEARCH_STR2); i++) {
-      if (memcmp(buffer + i, SEARCH_STR2, strlen(SEARCH_STR2)) == 0) {
-        xyziPos = f_tell(&Fil) - bytes_read + i;
-        break;  // Opět, pokud chcete najít všechny výskyty, můžete odstranit tento 'break'.
-      }
+  // Hledej "SIZE" v bufferu
+  for (size_t i = 0; i <= bytes_read - strlen(SEARCH_STR1); i++) {
+    if (memcmp(buffer + i, SEARCH_STR1, strlen(SEARCH_STR1)) == 0) {
+      sizePos = i;
+      break;  // Pokud chcete pokračovat ve vyhledávání dalších výskytů, odstraňte tento 'break'.
     }
-    for (size_t i = 0; i <= bytes_read - strlen(SEARCH_STR3); i++) {
-      if (memcmp(buffer + i, SEARCH_STR3, strlen(SEARCH_STR3)) == 0) {
-        rgbaPos = f_tell(&Fil) - bytes_read + i;
-        break;  // Pokud chcete pokračovat ve vyhledávání dalších výskytů, odstraňte tento 'break'.
-      }
-    }
+  }
 
-    // Pokud jste našli oba řetězce, můžete ukončit hledání
-    if (sizePos > 0 && xyziPos > 0 && rgbaPos > 0) {
-      break;
+  // Hledej "XYZI" v bufferu
+  for (size_t i = 0; i <= bytes_read - strlen(SEARCH_STR2); i++) {
+    if (memcmp(buffer + i, SEARCH_STR2, strlen(SEARCH_STR2)) == 0) {
+      xyziPos = i;
+      break;  // Opět, pokud chcete najít všechny výskyty, můžete odstranit tento 'break'.
+    }
+  }
+  for (size_t i = 0; i <= bytes_read - strlen(SEARCH_STR3); i++) {
+    if (memcmp(buffer + i, SEARCH_STR3, strlen(SEARCH_STR3)) == 0) {
+      rgbaPos = i;
+      break;  // Pokud chcete pokračovat ve vyhledávání dalších výskytů, odstraňte tento 'break'.
     }
   }
 
   if ((sizePos > 0) &&
-    (f_lseek(&Fil, sizePos+12) == 0) &&
-    (f_read(&Fil, buf, 12, &bytes_read) == FR_OK) &&
-    (buf[0] == 8) && (buf[1] == 8) && (buf[1] == 8) &&
     (rgbaPos > 0) &&
-    (f_lseek(&Fil, rgbaPos+4) == 0) &&
-    (f_read(&Fil, &paletteSize, 4, &bytes_read) == FR_OK) &&
-    (paletteSize == 1024) &&
-    (f_lseek(&Fil, rgbaPos+8) == 0) &&
-    (f_read(&Fil, palette, paletteSize, &bytes_read) == FR_OK) &&
-    (xyziPos > 0) &&
-    (f_lseek(&Fil, xyziPos+12) == 0) &&
-    (f_read(&Fil, &voxelCount, 4, &bytes_read) == FR_OK) ) {
-//    printf("Size %ldx%ldx%ld\n", buf[0], buf[1], buf[2]);
-//    printf("paletteSize %ld\n", paletteSize);
-//    printf("voxel count %ld\n", voxelCount);
+    (xyziPos > 0)) {
+    (*(uint32_t*)&buffer[sizePos+12] == 8) && (*(uint32_t*)&buffer[sizePos+16] == 8) && (*(uint32_t*)&buffer[sizePos+20] == 8) &&
+    (*(uint32_t*)&buffer[rgbaPos+4] == 1024) &&
+    voxelCount = *(uint32_t*)&buffer[xyziPos+12];
+    coord = (Coord_t*)(buffer + xyziPos + 16);
     for(int i = 0; i < voxelCount; i++) {
-      if (f_read(&Fil, &coord, 4, &bytes_read) == FR_OK) {
-        memcpy(&scrBuf[coord.x][coord.y][coord.z], palette + coord.i * 4, sizeof(Voxel_t));
-      }
+      memcpy(&scrBuf[coord->x][coord->y][coord->z], &buffer[rgbaPos+16 + coord->i * 4], sizeof(Voxel_t));
+      coord++;
     }
   }
 
-  f_close(&Fil);
 }
 
 
