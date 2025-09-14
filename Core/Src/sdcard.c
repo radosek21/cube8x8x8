@@ -8,7 +8,6 @@
 #include "fatfs.h"
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 
 #define FILENEME_BUF_SIZE   32768
 #define FILENEME_BUF_CNT    2048
@@ -51,6 +50,11 @@ void Sdcard_Unmount()
     f_mount(NULL, "", 0);
     sdcard.mounted = false;
   }
+}
+
+bool Sdcard_IsMounted()
+{
+  return sdcard.mounted;
 }
 
 void Sdcard_ScanFiles()

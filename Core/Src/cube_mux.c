@@ -39,6 +39,7 @@ static const MuxDmaConf_t muxDmaConf[LEDS_PAGES_CNT] = {
 
 
 static void CubeMux_NextMux();
+static int logical_xor(int a, int b);
 
 void CubeMux_Init()
 {
@@ -98,7 +99,22 @@ static void CubeMux_NextMux()
   cubeMux.currMuxId %= LEDS_PAGES_CNT;
 }
 
-void CubeMux_SetPixel_Voxel(int hLedId, uint16_t Pixel, Voxel_t vox)
+
+
+void CubeMux_ScreenToVoxels(Voxel_t scrBuf[8][8][8])
+{
+  for(int z=0; z<8; z++) {
+    for(int y=0; y<8; y++) {
+      for(int x=0; x<8; x++) {
+        Voxel_t vox = scrBuf[(logical_xor(y&1, !(z&2))) ? 7-x : x][(z&2) ? y : 7-y][z];
+        CubeMux_SetPixel2Voxel(z/2, (z&1)*64 + y*8 + x, vox);
+      }
+    }
+  }
+}
+
+
+void CubeMux_SetPixel2Voxel(int hLedId, uint16_t Pixel, Voxel_t vox)
 {
   cubeMux.muxUpdateMask |= (1 << hLedId);
   WS28XX_SetPixel_Voxel(&cubeMux.hLeds[hLedId], Pixel, vox);
@@ -113,3 +129,7 @@ void TIM_PWM_PulseFinished_Callback(uint32_t channel)
 }
 
 /***********************************************************************************************************/
+static int logical_xor(int a, int b)
+{
+  return (a || b) && !(a && b);
+}

@@ -75,6 +75,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define SD_DET_Pin GPIO_PIN_12
+#define SD_DET_GPIO_Port GPIOB
+#define SD_WP_Pin GPIO_PIN_13
+#define SD_WP_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
