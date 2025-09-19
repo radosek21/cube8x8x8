@@ -19,6 +19,8 @@ extern "C"
 **************    Public Functions
 ************************************************************************************************************/
 
+void Graphics_ShowAnimation(void);
+
 void Graphics_ShowVoxFile(char *filename);
 
 

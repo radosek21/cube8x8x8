@@ -58,6 +58,7 @@ void App_Handler()
   }
 
   // Rotary encoder UI handling
+  /*
   int16_t relPos = Encoder_GetRelativePosition();
   if (relPos != 0) {
     filename = filelist[++pos];
@@ -68,6 +69,11 @@ void App_Handler()
     Display_ShowFilename(filename);
     Graphics_ShowVoxFile(filename);
   }
+  */
+
+  Graphics_ShowAnimation();
+
+
   HAL_Delay(1);
 }
 
