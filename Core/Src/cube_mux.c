@@ -18,8 +18,9 @@ typedef struct {
   uint16_t screen[8][8];
   uint8_t blackScreenBuffer[(WS28XX_PIXEL_MAX * 24) + SW28xx_DMA_DUMMY_BYTES];
   uint16_t currMuxId;
+  uint16_t currBuffId;
   uint32_t muxPendingMask;
-  uint32_t muxUpdateMask;
+  bool newScreen;
 } CubeMux_t;
 
 typedef struct {
@@ -44,13 +45,14 @@ static int logical_xor(int a, int b);
 void CubeMux_Init()
 {
   WS28XX_HandleTypeDef *hLed;
+  cubeMux.currBuffId = 0;
   for(int i=0; i<LEDS_PAGES_CNT; i++) {
     hLed = &cubeMux.hLeds[i];
     WS28XX_Init(hLed, 1, WS28XX_PIXEL_MAX);
     for(int p = 0; p < WS28XX_PIXEL_MAX; p++) {
       WS28XX_SetPixel_RGB_565(hLed, p, COLOR_RGB565_BLACK);
     }
-    WS28XX_Update(hLed);
+    WS28XX_Update(hLed, cubeMux.currBuffId);
     LL_TIM_CC_EnableChannel(TIM1, muxDmaConf[i].timChannel);
   }
   memset(cubeMux.blackScreenBuffer, 0, sizeof(cubeMux.blackScreenBuffer));
@@ -64,13 +66,13 @@ void CubeMux_Init()
 
   cubeMux.currMuxId = 0;
   cubeMux.muxPendingMask = 0;
-  cubeMux.muxUpdateMask = 0;
+  cubeMux.newScreen = false;
 }
 
 void CubeMux_StartMux()
 {
   cubeMux.currMuxId = 0;
-  cubeMux.muxUpdateMask = 0;
+  cubeMux.newScreen = false;
   CubeMux_NextMux();
 }
 
@@ -80,15 +82,14 @@ static void CubeMux_NextMux()
   cubeMux.muxPendingMask = 0xF;
 
   LL_TIM_DisableCounter(TIM1);
-  if (cubeMux.muxUpdateMask == 0xF) {
-    cubeMux.muxUpdateMask = 0;
-    for(int i=0; i<LEDS_PAGES_CNT; i++) {
-      WS28XX_Update(&cubeMux.hLeds[i]);
-    }
+  if (cubeMux.newScreen) {
+    cubeMux.newScreen = false;
+    cubeMux.currBuffId++;
+    cubeMux.currBuffId &= 1;
   }
 
   for(int i=0; i<LEDS_PAGES_CNT; i++) {
-    LL_DMA_ConfigAddresses(DMA1, muxDmaConf[i].dmaChannel, (i == cubeMux.currMuxId) ? (uint32_t)cubeMux.hLeds[i].Buffer : (uint32_t)cubeMux.blackScreenBuffer, muxDmaConf[i].ccr, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+    LL_DMA_ConfigAddresses(DMA1, muxDmaConf[i].dmaChannel, (i == cubeMux.currMuxId) ? (uint32_t)cubeMux.hLeds[i].Buffer[cubeMux.currBuffId] : (uint32_t)cubeMux.blackScreenBuffer, muxDmaConf[i].ccr, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
     LL_DMA_SetDataLength(DMA1, muxDmaConf[i].dmaChannel, (WS28XX_PIXEL_MAX * 24) + SW28xx_DMA_DUMMY_BYTES);
     LL_DMA_EnableChannel(DMA1, muxDmaConf[i].dmaChannel);
     LL_DMA_EnableIT_TC(DMA1, muxDmaConf[i].dmaChannel);
@@ -111,12 +112,15 @@ void CubeMux_ScreenToVoxels(Voxel_t scrBuf[8][8][8])
       }
     }
   }
+  for(int i=0; i<LEDS_PAGES_CNT; i++) {
+    WS28XX_Update(&cubeMux.hLeds[i], !cubeMux.currBuffId & 1);
+  }
+  cubeMux.newScreen = true;
 }
 
 
 void CubeMux_SetPixel2Voxel(int hLedId, uint16_t Pixel, Voxel_t vox)
 {
-  cubeMux.muxUpdateMask |= (1 << hLedId);
   WS28XX_SetPixel_Voxel(&cubeMux.hLeds[hLedId], Pixel, vox);
 }
 

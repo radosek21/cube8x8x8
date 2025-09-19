@@ -133,7 +133,7 @@ typedef struct {
 
 typedef struct
 {
-  uint8_t                Buffer[(WS28XX_PIXEL_MAX * 24) + SW28xx_DMA_DUMMY_BYTES];
+  uint8_t                Buffer[2][(WS28XX_PIXEL_MAX * 24) + SW28xx_DMA_DUMMY_BYTES];
   uint8_t                Channel;
   uint8_t                Lock;
   uint8_t                Pixel[WS28XX_PIXEL_MAX][3];
@@ -150,7 +150,7 @@ bool  WS28XX_SetPixel_RGB_888(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint32
 bool  WS28XX_SetPixel_Voxel(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, Voxel_t vox);
 bool  WS28XX_SetPixel_RGBW_565(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint16_t Color, uint8_t Brightness);
 bool  WS28XX_SetPixel_RGBW_888(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint32_t Color, uint8_t Brightness);
-bool  WS28XX_Update(WS28XX_HandleTypeDef *hLed);
+bool  WS28XX_Update(WS28XX_HandleTypeDef *hLed, int buffId);
 
 #ifdef __cplusplus
 }
