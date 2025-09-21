@@ -12,6 +12,7 @@
 #include "display.h"
 #include "fatfs.h"
 #include "graphics.h"
+#include "animation.h"
 
 
 
@@ -19,6 +20,7 @@
 char **filelist;
 uint32_t pos = 0;
 char *filename;
+int anim_changed = 1;
 
 
 void App_Init()
@@ -58,6 +60,7 @@ void App_Handler()
   }
 
   // Rotary encoder UI handling
+
   /*
   int16_t relPos = Encoder_GetRelativePosition();
   if (relPos != 0) {
@@ -71,7 +74,19 @@ void App_Handler()
   }
   */
 
-  Graphics_ShowAnimation();
+  int16_t relPos = Encoder_GetRelativePosition();
+  if (relPos > 0)
+  {
+    animation_select_next();
+    Display_ShowFilename(animation_get_name());
+  }
+  else if (relPos < 0)
+  {
+    animation_select_previous();
+    Display_ShowFilename(animation_get_name());
+  }
+
+  animation_show();
 
 
   HAL_Delay(1);
