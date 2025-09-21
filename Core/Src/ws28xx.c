@@ -474,7 +474,7 @@ bool WS28XX_SetPixel_RGBW_888(WS28XX_HandleTypeDef *hLed, uint16_t Pixel, uint32
   *
   * @retval bool: true or false
   */
-bool WS28XX_Update(WS28XX_HandleTypeDef *hLed)
+bool WS28XX_Update(WS28XX_HandleTypeDef *hLed, int buffId)
 {
   bool answer = true;
   uint32_t i = 0;
@@ -483,9 +483,9 @@ bool WS28XX_Update(WS28XX_HandleTypeDef *hLed)
     for (int rgb = 0; rgb < 3; rgb ++) {
       for (int b = 7; b >= 0 ; b--) {
         if ((hLed->Pixel[pixel][rgb] & (1 << b)) == 0) {
-          hLed->Buffer[i] = WS28XX_PULSE_0;
+          hLed->Buffer[buffId][i] = WS28XX_PULSE_0;
         } else {
-          hLed->Buffer[i] = WS28XX_PULSE_1;
+          hLed->Buffer[buffId][i] = WS28XX_PULSE_1;
         }
         i++;
       }
