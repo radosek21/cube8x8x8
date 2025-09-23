@@ -7,7 +7,6 @@
 // uint32_t HAL_GetTick(void);
 
 typedef struct {
-    uint8_t inited;
     uint8_t corner_idx;   // 0..7
     int8_t  size;         // 7..1 (1 => 2x2x2 box), pak zpět 1..7
     int8_t  dir;          // -1 = shrink, +1 = expand
@@ -69,19 +68,22 @@ static inline void set_vox(int x,int y,int z, uint8_t r,uint8_t g,uint8_t b){
 static inline void draw_edge_X(int x0,int x1,int y,int z, uint8_t r,uint8_t g,uint8_t b){
     if ((unsigned)y>7||(unsigned)z>7) return;
     if (x0>x1){ int t=x0; x0=x1; x1=t; }
-    if (x0<0) x0=0; if (x1>7) x1=7;
+    if (x0<0) x0=0;
+    if (x1>7) x1=7;
     for (int x=x0; x<=x1; ++x) set_vox(x,y,z,r,g,b);
 }
 static inline void draw_edge_Y(int y0,int y1,int x,int z, uint8_t r,uint8_t g,uint8_t b){
     if ((unsigned)x>7||(unsigned)z>7) return;
     if (y0>y1){ int t=y0; y0=y1; y1=t; }
-    if (y0<0) y0=0; if (y1>7) y1=7;
+    if (y0<0) y0=0;
+    if (y1>7) y1=7;
     for (int y=y0; y<=y1; ++y) set_vox(x,y,z,r,g,b);
 }
 static inline void draw_edge_Z(int z0,int z1,int x,int y, uint8_t r,uint8_t g,uint8_t b){
     if ((unsigned)x>7||(unsigned)y>7) return;
     if (z0>z1){ int t=z0; z0=z1; z1=t; }
-    if (z0<0) z0=0; if (z1>7) z1=7;
+    if (z0<0) z0=0;
+    if (z1>7) z1=7;
     for (int z=z0; z<=z1; ++z) set_vox(x,y,z,r,g,b);
 }
 static inline void draw_box_edges(int minx,int miny,int minz, int maxx,int maxy,int maxz,
@@ -105,7 +107,7 @@ static inline void draw_box_edges(int minx,int miny,int minz, int maxx,int maxy,
 
 void anim_shrink_cube(graph_animation_t *a)
 {
-    if (!st.inited){
+    if (a->reset){
         memset(&st, 0, sizeof(st));
         st.corner_idx = 0;
         st.size = 7;        // start plná kostka
@@ -113,7 +115,7 @@ void anim_shrink_cube(graph_animation_t *a)
         st.rng  = HAL_GetTick();
         st.prev_r = 255; st.prev_g = 255; st.prev_b = 255; // sentinel (žádná předchozí)
         pick_random_color_distinct(&st.cr,&st.cg,&st.cb);
-        st.inited = 1;
+        a->reset = 0;
     }
 
     a->timer = HAL_GetTick() + 90;   // tempo

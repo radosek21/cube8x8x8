@@ -18,7 +18,6 @@ typedef struct {
 } pong_state_t;
 
 static pong_state_t st;
-static int st_inited = 0;
 
 /* ---------- Utility ---------- */
 static inline int step_toward(int cur, int target) {
@@ -93,7 +92,7 @@ void anim_ping_pong(graph_animation_t *a)
 {
     if (!a) return;
 
-    if (!st_inited) {
+    if (a->reset) {
         st.x_fp = 1*256;
         st.y_fp = 3*256;
         st.z_fp = 3*256;
@@ -103,7 +102,7 @@ void anim_ping_pong(graph_animation_t *a)
         st.rng = (uint32_t)HAL_GetTick();
         st.flashL_ticks = 0;
         st.flashR_ticks = 0;
-        st_inited = 1;
+        a->reset = 0;
     }
 
     a->timer = HAL_GetTick() + 100; // krok 100ms
@@ -162,9 +161,12 @@ void anim_ping_pong(graph_animation_t *a)
     }
 
     // Omezení rychlostí
-    if (st.vx>1024) st.vx=1024; if (st.vx<-1024) st.vx=-1024;
-    if (st.vy>1024) st.vy=1024; if (st.vy<-1024) st.vy=-1024;
-    if (st.vz>1024) st.vz=1024; if (st.vz<-1024) st.vz=-1024;
+    if (st.vx>1024) st.vx=1024;
+    if (st.vx<-1024) st.vx=-1024;
+    if (st.vy>1024) st.vy=1024;
+    if (st.vy<-1024) st.vy=-1024;
+    if (st.vz>1024) st.vz=1024;
+    if (st.vz<-1024) st.vz=-1024;
 
     // Kreslení pálky
     draw_paddle_left(st.paddleL_y, st.paddleL_z, 180 + (st.flashL_ticks>0?80:0), 0, 0);

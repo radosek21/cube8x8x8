@@ -37,19 +37,18 @@ static inline Voxel_t random_color(void){
 void anim_screensaver(graph_animation_t *a)
 {
     // Q8.8 fixed-point: 1.0 voxel == 256
-    static int inited=0;
     static int32_t px,py,pz;     // pozice min-rohu
     static int32_t vx,vy,vz;     // rychlost
     static int s;                // hrana krychle
     static Voxel_t col;
 
     // === laditelné parametry rychlosti ===
-    const int32_t VMIN = 12;   // ~0.047 vox/frame
+    const int32_t VMIN = 24;   // ~0.047 vox/frame
     const int32_t VMAX = 48;   // ~0.188 vox/frame
     // =====================================
 
-    if(!inited){
-        inited=1;
+    if(a->reset){
+        a->reset = 0;
         s  = 3;
         px = (rand()%(8 - s + 1))<<8;
         py = (rand()%(8 - s + 1))<<8;
@@ -75,9 +74,12 @@ void anim_screensaver(graph_animation_t *a)
         else vz += d;
 
         // clamp + nikdy nezůstat stát
-        if(vx>+VMAX) vx=+VMAX; if(vx<-VMAX) vx=-VMAX;
-        if(vy>+VMAX) vy=+VMAX; if(vy<-VMAX) vy=-VMAX;
-        if(vz>+VMAX) vz=+VMAX; if(vz<-VMAX) vz=-VMAX;
+        if(vx>+VMAX) vx=+VMAX;
+        if(vx<-VMAX) vx=-VMAX;
+        if(vy>+VMAX) vy=+VMAX;
+        if(vy<-VMAX) vy=-VMAX;
+        if(vz>+VMAX) vz=+VMAX;
+        if(vz<-VMAX) vz=-VMAX;
         if(vx==0 && vy==0 && vz==0){
             int sign = (rand()&1)? +1 : -1;
             int pick = rand()%3;
@@ -107,9 +109,12 @@ void anim_screensaver(graph_animation_t *a)
         int jitter = ((rand()%7)-3); // -3..+3
         vx += jitter; vy -= jitter;
         // držet v limitech
-        if(vx>+VMAX) vx=+VMAX; if(vx<-VMAX) vx=-VMAX;
-        if(vy>+VMAX) vy=+VMAX; if(vy<-VMAX) vy=-VMAX;
-        if(vz>+VMAX) vz=+VMAX; if(vz<-VMAX) vz=-VMAX;
+        if(vx>+VMAX) vx=+VMAX;
+        if(vx<-VMAX) vx=-VMAX;
+        if(vy>+VMAX) vy=+VMAX;
+        if(vy<-VMAX) vy=-VMAX;
+        if(vz>+VMAX) vz=+VMAX;
+        if(vz<-VMAX) vz=-VMAX;
     }
 
     // jemný fade pro hladký dojem

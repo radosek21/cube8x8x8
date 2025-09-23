@@ -21,7 +21,6 @@ typedef struct { int8_t x,y,z; } vec3b;
 typedef enum { MODE_PLAY=0, MODE_WIN, MODE_FAIL } mode_t;
 
 static struct {
-    uint8_t inited;
     mode_t  mode;
     uint8_t anim_ticks;
 
@@ -70,7 +69,9 @@ static Voxel_t rand_color(void){
 /* lehce zesvětli barvu (pro hlavu) */
 static inline Voxel_t brighten(Voxel_t c, uint8_t add){
     int r=c.r+add, g=c.g+add, b=c.b+add;
-    if (r>255) r=255; if (g>255) g=255; if (b>255) b=255;
+    if (r>255) r=255;
+    if (g>255) g=255;
+    if (b>255) b=255;
     return (Voxel_t){ (uint8_t)r,(uint8_t)g,(uint8_t)b };
 }
 
@@ -99,7 +100,6 @@ static void spawn_food(void){
 /* inicializace nové hry */
 static void game_reset(void){
     memset(&S, 0, sizeof(S));
-    S.inited = 1;
     S.mode = MODE_PLAY;
     S.anim_ticks = 0;
     S.rng = HAL_GetTick();
@@ -195,7 +195,7 @@ static vec3b bfs_next_step(vec3b head, vec3b goal){
             if (!dup) pref[n++] = dirs[i];
         }
         /* pokud by n<6, doplň, ale nemělo by nastat */
-        while (n<6){ pref[n++] = dirs[n-1]; }
+        // while (n<6){ pref[n++] = dirs[n-1]; }
     }
 
     /* BFS smyčka */
@@ -364,7 +364,10 @@ static void render_fail_frame(uint8_t t){
 /* --------------------------- Hlavní animace ------------------------ */
 void anim_snake(graph_animation_t *a)
 {
-    if (!S.inited) game_reset();
+    if (a->reset){
+      game_reset();
+      a->reset = 0;
+    }
 
     a->timer = HAL_GetTick() + TICK_MS;
 

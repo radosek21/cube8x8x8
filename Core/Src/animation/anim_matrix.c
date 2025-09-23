@@ -17,7 +17,6 @@ typedef struct {
 } rain_col_t;
 
 static struct {
-    uint8_t  inited;
     uint32_t rng;
     rain_col_t col[8][8];
 } rstate;
@@ -73,7 +72,6 @@ static void init_rain(void){
             }
         }
     }
-    rstate.inited = 1;
 }
 
 /* --- přičti barvu s ořezem --- */
@@ -90,7 +88,10 @@ static inline void add_voxel_g(int x,int y,int z, uint8_t r,uint8_t g,uint8_t b)
 /* --- hlavní animace --- */
 void anim_matrix(graph_animation_t *a)
 {
-    if (!rstate.inited) init_rain();
+    if (a->reset) {
+      init_rain();
+      a->reset = 0;
+    }
 
     a->timer = HAL_GetTick() + 80;   // ~12.5 FPS
     fade_scene();

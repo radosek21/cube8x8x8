@@ -30,7 +30,6 @@ static const Voxel_t zpal[8] = {
 
 /* --- stav --- */
 static uint8_t phase = 0;
-static uint8_t inited = 0;
 
 /* parametry vlny (lze ladit) */
 static const int centerZ = 3;     /* střed (0..7) */
@@ -54,7 +53,10 @@ static inline void put_voxel_dim(int x,int y,int z, Voxel_t c, int shift)
 /* --- hlavní animace --- */
 void anim_sine_wave(graph_animation_t *a)
 {
-    if (!inited) { phase = 0; inited = 1; }
+    if (a->reset) {
+      phase = 0;
+      a->reset = 0;
+    }
 
     a->timer = HAL_GetTick() + 80;        /* tempo */
     memset(scrBuf, 0, sizeof(scrBuf));    /* čistý frame */

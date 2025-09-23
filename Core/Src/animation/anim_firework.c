@@ -40,7 +40,6 @@ typedef struct {
 /* ----------------------- Stav scény ----------------------- */
 static struct {
     uint32_t rng;
-    uint8_t  inited;
 
     rocket_t rockets[3];       /* několik současných raket */
     spark_t  sparks[64];       /* jiskry po explosi */
@@ -125,10 +124,10 @@ static void explode_rocket(const rocket_t *r){
 /* ----------------------- Hlavní animace ----------------------- */
 void anim_firework(graph_animation_t *a)
 {
-    if(!fw.inited){
+    if(!a->reset){
         memset(&fw,0,sizeof(fw));
         fw.rng = HAL_GetTick();
-        fw.inited = 1;
+        a->reset = 0;
     }
 
     /* rychlost animace — 70–100 ms vypadá dobře */

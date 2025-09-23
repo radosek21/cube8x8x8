@@ -1,4 +1,4 @@
-#include "anim_test.h"
+#include "anim_bees.h"
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
@@ -105,14 +105,13 @@ typedef struct {
     int   px,py,pz;     // minulá integer pozice pro stín
 } bee_t;
 
-void anim_test(graph_animation_t *a)
+void anim_bees(graph_animation_t *a)
 {
-    static int inited=0;
     static bee_t B[N_BEES];
     static flower_t F[N_FLOWERS];
 
-    if(!inited){
-        inited=1;
+    if(a->reset){
+        a->reset=0;
 
         // Tři kytky „naproti úlu“ (předek/levá strana), žádná pod úlem:
         const int pos[N_FLOWERS][2] = { {1,1}, {2,5}, {5,2} };

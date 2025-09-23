@@ -14,7 +14,6 @@
    ----------------------------------------------------------- */
 
 typedef struct {
-    uint8_t inited;
     uint8_t phase;      /* 0..255 – běh cyklu */
 } hb_state_t;
 
@@ -72,8 +71,8 @@ static inline uint8_t clamp8i(int v){
 
 void anim_heartbeat(graph_animation_t *a)
 {
-    if (!st.inited){
-        st.inited = 1;
+    if (a->reset){
+        a->reset = 0;
         st.phase = 0;
     }
 

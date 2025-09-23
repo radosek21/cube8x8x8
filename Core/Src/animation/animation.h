@@ -18,6 +18,7 @@ typedef struct
   Voxel_t v;
   uint32_t seqIndex;
   uint32_t i1, i2, i3;
+  uint8_t reset;
 
 } graph_animation_t;
 
@@ -28,9 +29,6 @@ typedef struct
 } animation_desc_t;
 
 
-
-
-#define TICK_EXPIRED(a)           ( HAL_GetTick() - (a) < 0x7fffffff )
 
 #define VOXEL_COL_BLACK(v)   do { (v).r = 0;   (v).g = 0;   (v).b = 0;   } while(0)
 #define VOXEL_COL_WHITE(v)   do { (v).r = 255; (v).g = 255; (v).b = 255; } while(0)

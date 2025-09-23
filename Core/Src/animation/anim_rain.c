@@ -2,9 +2,6 @@
 #include <stdint.h>
 #include <string.h>
 
-/* Externí buffer a čas */
-extern Voxel_t scrBuf[8][8][8];
-uint32_t HAL_GetTick(void);
 
 /* ------------------------------ Stav ------------------------------ */
 typedef struct {
@@ -23,7 +20,6 @@ typedef struct {
 
 static struct {
     uint32_t rng;
-    uint8_t  inited;
 
     drop_t   drops[28];    // aktivní kapky
     splash_t spl[12];      // současné splash efekty
@@ -126,10 +122,10 @@ static void render_thunder_flash(void){
 /* ------------------------------ Animace ------------------------------ */
 void anim_rain(graph_animation_t *a)
 {
-    if (!st.inited){
+    if (a->reset){
         memset(&st, 0, sizeof(st));
         st.rng = HAL_GetTick();
-        st.inited = 1;
+        a->reset = 0;
     }
 
     a->timer = HAL_GetTick() + 80;   // svižný déšť (klidně +100 pro pomalejší)
@@ -144,7 +140,7 @@ void anim_rain(graph_animation_t *a)
     if (st.thunder_ticks == 0 && st.thunder_cooldown == 0){
         if ((rr() & 0x3F) == 0) {             // ~1/64 ticků
             st.thunder_ticks = 2 + (rr() & 1);// 1–2 snímky záblesku
-            st.thunder_cooldown = 18 + (rr() & 7); // pauza do dalšího blesku
+            st.thunder_cooldown = 30 + (rr() & 7); // pauza do dalšího blesku
         }
     }
 
