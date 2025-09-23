@@ -107,7 +107,7 @@ void CubeMux_ScreenToVoxels(Voxel_t scrBuf[8][8][8])
   for(int z=0; z<8; z++) {
     for(int y=0; y<8; y++) {
       for(int x=0; x<8; x++) {
-        Voxel_t vox = scrBuf[(logical_xor(y&1, !(z&2))) ? 7-x : x][(z&2) ? y : 7-y][z];
+        Voxel_t vox = scrBuf[(z&2) ? 7 - y : y][(logical_xor(y&1, !(z&2))) ? 7-x : x][z];
         CubeMux_SetPixel2Voxel(z/2, (z&1)*64 + y*8 + x, vox);
       }
     }
