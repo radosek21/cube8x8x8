@@ -16,6 +16,7 @@
 #include "anim_ping_pong.h"
 #include "anim_rain.h"
 #include "anim_firework.h"
+#include "anim_pyre.h"
 #include "anim_matrix.h"
 #include "anim_shrink_cube.h"
 #include "anim_heartbeat.h"
@@ -24,11 +25,13 @@
 #include "anim_text.h"
 #include "anim_explosion.h"
 #include "anim_bees.h"
+#include "anim_volcano.h"
 
 static uint8_t animation_index;
 
 static graph_animation_t anim;
 static animation_desc_t desc[] = {
+    // { "Test", &anim_test          },
     { "Happy birthday", &anim_text          },
     { "Scanner",        &anim_scanner       },
     { "Edges",          &anim_edges         },
@@ -39,6 +42,8 @@ static animation_desc_t desc[] = {
     { "Snake",          &anim_snake         },
     { "Rain",           &anim_rain          },
     { "Fireworks",      &anim_firework      },
+    { "Pyre",           &anim_pyre          },
+    { "Volcano",        &anim_volcano       },
     { "Matrix",         &anim_matrix        },
     { "Heartbeat",      &anim_heartbeat     },
     { "Screensaver",    &anim_screensaver   },

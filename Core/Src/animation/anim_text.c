@@ -10,7 +10,7 @@ extern Voxel_t scrBuf[8][8][8];
 #define FLIP_X    1   // 1 = zrcadlit X (sloupce glyphu)
 #define FLIP_Y    1   // 1 = zrcadlit Y (směr pohybu textu)
 #define FLIP_Z    1   // 1 = zrcadlit Z (řádky glyphu)
-#define FRAME_MS  50  // perioda snímku v ms
+#define FRAME_MS  30  // perioda snímku v ms
 #define STEP_DIV  2   // posun o 1 voxel po každých STEP_DIV framech
 /* ========================================== */
 
@@ -95,7 +95,7 @@ void anim_text(graph_animation_t *a)
     // Tvůj text (kapitálky). Klidně přepoj na a->text, pokud ho máš.
     static const char *msg = "HAPPY BIRTHDAY 50";
     // Jak dlouhá má být mezera při ' ' i na konci
-    const int gap_frames = 8;
+    const int gap_frames = 6;
 
     static int iChar;        // index znaku v msg
     static int y;            // pozice roviny (0..7)

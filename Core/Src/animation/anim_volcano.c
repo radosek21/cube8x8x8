@@ -1,4 +1,4 @@
-#include "anim_test.h"
+#include "anim_volcano.h"
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -222,7 +222,7 @@ static void render_scene(void){
     }
 }
 
-void anim_test(graph_animation_t *a)
+void anim_volcano(graph_animation_t *a)
 {
     static int seeded = 0;
     static int frame = 0;

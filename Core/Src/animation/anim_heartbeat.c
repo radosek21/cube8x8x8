@@ -35,7 +35,7 @@ static hb_state_t st;
 #define HB_P2_AMP          230     /* amplituda 2. pulzu (trochu nižší) */
 
 /* zbytek cyklu klid (pauza); můžeš posunout rychlost změnou HB_TIMER_MS */
-#define HB_PHASE_INC       6       /* posun fáze za snímek (větší = kratší cyklus) */
+#define HB_PHASE_INC       10       /* posun fáze za snímek (větší = kratší cyklus) */
 
 /* barvy (základ + přídavek s pulzem) */
 #define HB_BASE_R_COL      90
