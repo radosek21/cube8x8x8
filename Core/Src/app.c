@@ -22,6 +22,17 @@ uint32_t pos = 0;
 char *filename;
 int anim_changed = 1;
 
+typedef enum
+{
+  APP_SD_CARD = 0,
+  APP_ANIMATION
+} app_selection_t;
+
+
+static app_selection_t app_select;
+static uint32_t displayTimer;
+
+
 
 void App_Init()
 {
@@ -31,6 +42,10 @@ void App_Init()
   Display_Init();
 
   CubeMux_StartMux();
+
+  app_select = APP_ANIMATION;
+  animation_init();
+  Display_ShowFilename(animation_get_name());
 }
 
 void App_Handler()
@@ -39,55 +54,83 @@ void App_Handler()
   if ((BSP_SD_IsDetected() == SD_PRESENT) && !Sdcard_IsMounted()) {
     // Card inserted
     HAL_Delay(500);
-    Display_ShowSystemStatus(DISPLAY_STATUS_LOADING_STR);
+    // Display_ShowSystemStatus(DISPLAY_STATUS_LOADING_STR);
     Sdcard_Mount();
     if (Sdcard_IsMounted()) {
-      filelist= Sdcard_GetFilesList();
+      filelist = Sdcard_GetFilesList();
       pos = 0;
-      Display_ShowSystemStatus(DISPLAY_STATUS_READY_STR);
+      // Display_ShowSystemStatus(DISPLAY_STATUS_READY_STR);
     }
   }
 
   // Check for SDCard removing
   if ((BSP_SD_IsDetected() == SD_NOT_PRESENT) && Sdcard_IsMounted()) {
     // Card removed
-    Display_ShowSystemStatus(DISPLAY_STATUS_NO_SD_STR);
+    // Display_ShowSystemStatus(DISPLAY_STATUS_NO_SD_STR);
     Sdcard_Unmount();
     FATFS_UnLinkDriver(SDPath);
     MX_FATFS_Init();
     filelist = NULL;
     pos = 0;
+    app_select = APP_ANIMATION;
   }
 
-  // Rotary encoder UI handling
-
-  /*
-  int16_t relPos = Encoder_GetRelativePosition();
-  if (relPos != 0) {
-    filename = filelist[++pos];
-    if (filename == NULL) {
+  Encoder_ButtonPoll();
+  if (Encoder_GetButtonPressed())
+  {
+    if ((app_select == APP_ANIMATION) && (filelist != NULL))
+    {
+      app_select = APP_SD_CARD;
       pos = 0;
       filename = filelist[pos];
+      Display_ShowFilename(filename);
+      Graphics_ShowVoxFile(filename);
     }
-    Display_ShowFilename(filename);
-    Graphics_ShowVoxFile(filename);
+    else
+    {
+      app_select = APP_ANIMATION;
+      animation_init();
+      Display_ShowFilename(animation_get_name());
+    }
   }
-  */
 
-  int16_t relPos = Encoder_GetRelativePosition();
-  if (relPos > 0)
+
+  if (TICK_EXPIRED(displayTimer))
   {
-    animation_select_next();
-    Display_ShowFilename(animation_get_name());
-  }
-  else if (relPos < 0)
-  {
-    animation_select_previous();
-    Display_ShowFilename(animation_get_name());
-  }
+    displayTimer = HAL_GetTick() + 100;
 
-  animation_show();
+    if (app_select == APP_ANIMATION)
+    {
+      int16_t relPos = Encoder_GetRelativePosition();
+      if (relPos > 0)
+      {
+        animation_select_next();
+        Display_ShowFilename(animation_get_name());
+      }
+      else if (relPos < 0)
+      {
+        animation_select_previous();
+        Display_ShowFilename(animation_get_name());
+      }
+      animation_show();
+    }
 
+    else if (app_select == APP_SD_CARD)
+    {
+      int16_t relPos = Encoder_GetRelativePosition();
+      if (relPos != 0)
+      {
+        filename = filelist[++pos];
+        if (filename == NULL)
+        {
+            pos = 0;
+            filename = filelist[pos];
+        }
+        Display_ShowFilename(filename);
+        Graphics_ShowVoxFile(filename);
+      }
+    }
+  }
 
   HAL_Delay(1);
 }

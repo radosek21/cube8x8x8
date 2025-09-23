@@ -47,10 +47,12 @@
 #define ENCODER_LEFT_PIN                GPIO_PIN_6                ///< Encoder left GPIO PIN
 #define ENCODER_RIGHT_PORT              GPIOB                     ///< Encoder right GPIO PORT
 #define ENCODER_RIGHT_PIN               GPIO_PIN_7                ///< Encoder right GPIO PIN
+#define ENCODER_BUTTON_PORT             GPIOB
+#define ENCODER_BUTTON_PIN              GPIO_PIN_5
 
 #define ENCODER_IRQ_NUMBER              TIM4_IRQn                 ///< Encoder IRQ number
 #define ENCODER_IRQ_HANDLER             TIM4_IRQHandler           ///< Encoder IRQ handler
-#define PRIO_IRQ_ENCODER            	15      ///< Encoder timer
+#define PRIO_IRQ_ENCODER            	  15                        ///< Encoder timer
 
 /* Typedefs------------------------------------------------------------------ */
 
@@ -81,6 +83,9 @@ int16_t Encoder_GetAbsolutePosition(void);
  */
 int16_t Encoder_GetRelativePosition(void);
 
+void Encoder_ButtonPoll(void);
+
+uint16_t Encoder_GetButtonPressed(void);
 
 #endif /* ENCODER_H_ */
 

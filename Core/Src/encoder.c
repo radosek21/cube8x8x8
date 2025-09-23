@@ -32,6 +32,12 @@ typedef struct
   int16_t absolute_pos;
   int16_t relative_pos;
   int16_t relative_pos_last;
+
+  uint16_t button_shift_reg;
+  uint32_t button_timer;
+  uint16_t button_pressed;
+  uint16_t button_event;
+
 }encoder_Private_t;
 
 /* Private constants -------------------------------------------------------- */
@@ -69,6 +75,33 @@ void Encoder_Init(void)
 
 }
 
+void Encoder_ButtonPoll(void)
+{
+  if (TICK_EXPIRED(enc.button_timer))
+  {
+    enc.button_timer = HAL_GetTick() + 5;
+
+    enc.button_shift_reg <<= 1;
+    if (!(LL_GPIO_ReadInputPort(ENCODER_BUTTON_PORT) & (ENCODER_BUTTON_PIN)))
+    {
+      enc.button_shift_reg |= 1;
+    }
+
+    if ((enc.button_shift_reg & 0xFF) == 0xFF)
+    {
+      enc.button_pressed = 1;
+    }
+    else if ((enc.button_shift_reg & 0xFF) == 0x00)
+    {
+      if (enc.button_pressed)
+      {
+        enc.button_pressed = 0;
+        enc.button_event = 1;
+      }
+    }
+  }
+}
+
 int16_t Encoder_GetAbsolutePosition(void)
 {
   enc.absolute_pos = (int16_t)enc.cnt;
@@ -83,6 +116,13 @@ int16_t Encoder_GetRelativePosition(void)
   enc.relative_pos_last = enc.absolute_pos;
 
   return enc.relative_pos;
+}
+
+uint16_t Encoder_GetButtonPressed(void)
+{
+  uint16_t temp = enc.button_event;
+  enc.button_event = 0;
+  return temp;
 }
 
 /* Private Functions -------------------------------------------------------- */
@@ -177,6 +217,12 @@ static Status_t Encoder_LL_Init(void)
 
     // GPIO Configuration
     LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    GPIO_InitStruct.Pin = ENCODER_BUTTON_PIN;
+    GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+    LL_GPIO_Init(ENCODER_BUTTON_PORT, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = ENCODER_LEFT_PIN;
     GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;

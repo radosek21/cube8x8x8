@@ -54,6 +54,7 @@ typedef enum {
 	STATUS_ERROR
 } Status_t;
 
+#define TICK_EXPIRED(a)           ( HAL_GetTick() - (a) < 0x7fffffff )
 
 /* USER CODE END ET */
 
